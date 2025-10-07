@@ -23,9 +23,6 @@ def find_coordinate(data_dict, target_value, known="DRm"):
     y = data_dict['DRm']
     x = np.array(x)
     y = np.array(y)
-    print(  "x",x)
-    print(  "y",y)
-    print("target_value",target_value   )
     if known == 'D':
         interp_fun = interp1d(x, y, kind='linear', fill_value="extrapolate")
         return float(interp_fun(target_value))
@@ -33,7 +30,7 @@ def find_coordinate(data_dict, target_value, known="DRm"):
         interp_fun = interp1d(y, x, kind='linear', fill_value="extrapolate")
         return float(interp_fun(target_value))
     else:
-        raise ValueError("Parametro 'known' deve essere 'D' o 'DRm'")
+        raise ValueError("Parametro 'known' deve essere 'D' o 'DRm'") 
 
 
 print("I'm fitting curves!")
@@ -151,7 +148,7 @@ data20 = pd.read_csv("jumbo_20_data0.txt",sep='\t')
 
 print("load data 20",data20)
 
-data22 = pd.read_csv("jumbo_22_data.txt",sep='\t')
+data22 = pd.read_csv("jumbo_22_data0.txt",sep='\t')
 
 print("load data 22",data22)
 
@@ -176,7 +173,11 @@ for name, df in dataframes.items():
         print(f"\nGruppo L={valore}:\n", gruppo_df)
 
         try:
-            D3 = find_coordinate(gruppo_df, 3.0, known="DRm")
+            if gruppo_df.shape[0] < 2:
+                print(f"⚠️ Not enough data points to interpolate for L={valore}. Skipping.")
+                D3 = gruppo_df['D'].values[0] 
+            else:
+                D3 = find_coordinate(gruppo_df, 3.0, known="DRm")
             print(f"→ Interpolated D for DRm=3.0: {D3}")
             print(f"→ Corresponding N value: {gruppo_df['N'].values[0]}")
             # Add new row to the original DataFrame
@@ -300,15 +301,21 @@ data16all = data16all.to_numpy()
 data20all = dataframes['data20']
 data20all =data20all[data20all["DRm"] == 3.0]
 data20all = data20all.to_numpy()
+#data22
+data22all = dataframes['data22']
+data22all =data22all[data22all["DRm"] == 3.0]
+data22all = data22all.to_numpy()
+
+print("data10all",data10all)
+print("data16all",data16all)
+print("data20all",data20all)
+print("data22all",data22all)
 
 
 plt.plot(data10all[:,2],data10all[:,1],"-",color="blue", label="TK 10 fan")
 plt.plot(data16all[:,2],data16all[:,1],"-",color="red", label="TK 16 fan")
 plt.plot(data20all[:,2],data20all[:,1],"-",color="orange", label="TK 20 fan")
-
-
-
-
+plt.plot(data22all[:,2],data22all[:,1],"-",color="green", label="TK 22 fan")
 
 
 #PLOT GUENTNER DATA
@@ -359,33 +366,39 @@ plt.savefig('DR3.png',format='png', dpi=300)
 plt.show()
 
 #interpolat on N fan
-x_common = np.linspace(0.00001, 4, num=5)
+x_common = np.linspace(0.00001, 4, num=25)
 print("x_common",x_common)
 interp1 = interp1d(data10all[:,2], data10all[:,1], kind='linear', bounds_error=False, fill_value='extrapolate')
 interp2 = interp1d(data16all[:,2], data16all[:,1], kind='linear', bounds_error=False, fill_value='extrapolate')
 interp3 = interp1d(data20all[:,2], data20all[:,1], kind='linear', bounds_error=False, fill_value='extrapolate')
+interp4 = interp1d(data22all[:,2], data22all[:,1], kind='linear', bounds_error=False, fill_value='extrapolate')
 
-y1_common = interp1(x_common)
-y2_common = interp2(x_common)
-y3_common = interp3(x_common)
+y_10 = interp1(x_common)
+y_16 = interp2(x_common)
+y_20 = interp3(x_common)
+y_22 = interp4(x_common)
 
 def interpolate_across_N(y1, y2, N1, N2, N_target):
     w = (N_target - N1) / (N2 - N1)
     return (1 - w) * y1 + w * y2
 
 fansi=[12,14,18,20]
-y_12 = interpolate_across_N(y1_common, y2_common, 10, 16, 12)
-y_14 = interpolate_across_N(y1_common, y2_common, 10, 16, 14)
-y_14 = interpolate_across_N(y1_common, y2_common, 10, 16, 14)
-y_18 = interpolate_across_N(y2_common, y3_common, 16, 20, 18)
+y_12 = interpolate_across_N(y_10, y_16, 10, 16, 12)
+y_14 = interpolate_across_N(y_10, y_16, 10, 16, 14)
+y_18 = interpolate_across_N(y_16, y_20, 16, 20, 18)
+#y_22 = interpolate_across_N(y_16, y_20, 16, 20, 22)
 plt.figure(5)
+
 plt.plot(x_common, y_12, label=f'N={12}', linestyle='--')
 plt.plot(x_common, y_14, label=f'N={14}', linestyle='--')
 plt.plot(x_common, y_18, label=f'N={18}', linestyle='--')
+#plt.plot(x_common, y_22, label=f'N={22}', linestyle='--')
 
-plt.plot(data10all[:,2],data10all[:,1],"-",color="blue", label="TK 10 fan")
-plt.plot(data16all[:,2],data16all[:,1],"-",color="red", label="TK 16 fan")
-plt.plot(data20all[:,2],data20all[:,1],"-",color="orange", label="TK 20 fan")
+plt.plot(x_common, y_10,  "-",color="blue", label="TK 10 fan")
+plt.plot(x_common, y_16,  "-",color="red", label="TK 16 fan")
+plt.plot(x_common, y_20, "-",color="orange", label="TK 20 fan")
+plt.plot(x_common, y_22, "-",color="green", label="TK 22 fan")
+
 plt.legend(loc="upper right")
 plt.legend
 plt.xlabel("H [m]",fontsize = 12)
