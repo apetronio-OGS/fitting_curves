@@ -366,7 +366,7 @@ plt.savefig('DR3.png',format='png', dpi=300)
 plt.show()
 
 #interpolat on N fan
-x_common = np.linspace(0.00001, 4, num=25)
+x_common = np.linspace(0.00001, 5, num=50)
 print("x_common",x_common)
 interp1 = interp1d(data10all[:,2], data10all[:,1], kind='linear', bounds_error=False, fill_value='extrapolate')
 interp2 = interp1d(data16all[:,2], data16all[:,1], kind='linear', bounds_error=False, fill_value='extrapolate')
@@ -382,11 +382,28 @@ def interpolate_across_N(y1, y2, N1, N2, N_target):
     w = (N_target - N1) / (N2 - N1)
     return (1 - w) * y1 + w * y2
 
+def quadratic_interpolate(N0, y0, N1, y1, N2, y2, N_target):
+    L0 = ((N_target - N1)*(N_target - N2)) / ((N0 - N1)*(N0 - N2))
+    L1 = ((N_target - N0)*(N_target - N2)) / ((N1 - N0)*(N1 - N2))
+    L2 = ((N_target - N0)*(N_target - N1)) / ((N2 - N0)*(N2 - N1))
+    return y0 * L0 + y1 * L1 + y2 * L2
+
+
 fansi=[12,14,18,20]
-y_12 = interpolate_across_N(y_10, y_16, 10, 16, 12)
-y_14 = interpolate_across_N(y_10, y_16, 10, 16, 14)
-y_18 = interpolate_across_N(y_16, y_20, 16, 20, 18)
-#y_22 = interpolate_across_N(y_16, y_20, 16, 20, 22)
+which_interp="quad"
+if which_interp=="linear":
+    y_12 = interpolate_across_N(y_10, y_16, 10, 16, 12)
+    y_14 = interpolate_across_N(y_10, y_16, 10, 16, 14)
+    y_18 = interpolate_across_N(y_16, y_20, 16, 20, 18)
+    #y_22 = interpolate_across_N(y_16, y_20, 16, 20, 22)
+elif which_interp=="quad":
+    y_12 = quadratic_interpolate(10, y_10, 16, y_16, 20, y_20, 12)
+    y_14 = quadratic_interpolate(10, y_10, 16, y_16, 20, y_20, 14)
+    y_18 = quadratic_interpolate(16, y_16, 20, y_20, 22, y_22, 18)
+    #y_22 = quadratic_interpolate(16, y_16, 20, y_20, 22, y_22, 22)
+y_18 = (y_16[:]+y_20[:])/2
+    
+
 plt.figure(5)
 
 plt.plot(x_common, y_12, label=f'N={12}', linestyle='--')
@@ -399,6 +416,9 @@ plt.plot(x_common, y_16,  "-",color="red", label="TK 16 fan")
 plt.plot(x_common, y_20, "-",color="orange", label="TK 20 fan")
 plt.plot(x_common, y_22, "-",color="green", label="TK 22 fan")
 
+m=[y_10,y_12,y_14,y_16,y_18,y_20,y_22]
+print("m",m)    
+
 plt.legend(loc="upper right")
 plt.legend
 plt.xlabel("H [m]",fontsize = 12)
@@ -408,3 +428,28 @@ plt.xticks(fontsize=10)
 plt.grid()
 plt.title("Interpolated Curve Across Parameter N")
 plt.savefig('interpolated_curves.png',format='png', dpi=300)
+
+plt.figure(6)
+fan=[10,12,14,16,18,20,22]
+dr3=[2.1959, y_12[0], y_14[0],3.235,y_18[0],y_20[0],4.7086]
+#print(dr3)  
+plt.plot(fan,dr3,"-*",color="blue")
+
+x_targets = [0,1,2,3,4,5]  # Replace with your actual target
+for x_target in x_targets:
+    print(f"Target: {x_target}")
+    # Find the index of the closest value in x_common
+    idx = np.argmin(np.abs(x_common - x_target))
+    # Extract corresponding y values
+    y_values = [y_10[idx], y_12[idx], y_14[idx], y_16[idx], y_18[idx], y_20[idx], y_22[idx]]
+    plt.plot(fan,y_values,"-*", label=f"H={x_target}m")
+
+plt.legend(loc="upper left")
+plt.title("Fan performance at different heights")
+
+plt.xlabel("D [m]",fontsize = 12)
+plt.ylabel("Fan ",fontsize = 12)
+plt.yticks(fontsize=10)
+plt.xticks(fontsize=10)
+plt.grid()
+plt.savefig('interp_Dr3.png',format='png', dpi=300)
