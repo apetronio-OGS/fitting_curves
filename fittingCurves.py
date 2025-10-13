@@ -23,6 +23,9 @@ def find_coordinate(data_dict, target_value, known="DRm"):
     y = data_dict['DRm']
     x = np.array(x)
     y = np.array(y)
+    print(  "x",x)
+    print(  "y",y)
+    print("target_value",target_value   )
     if known == 'D':
         interp_fun = interp1d(x, y, kind='linear', fill_value="extrapolate")
         return float(interp_fun(target_value))
@@ -30,7 +33,7 @@ def find_coordinate(data_dict, target_value, known="DRm"):
         interp_fun = interp1d(y, x, kind='linear', fill_value="extrapolate")
         return float(interp_fun(target_value))
     else:
-        raise ValueError("Parametro 'known' deve essere 'D' o 'DRm'") 
+        raise ValueError("Parametro 'known' deve essere 'D' o 'DRm'")
 
 
 print("I'm fitting curves!")
@@ -47,8 +50,9 @@ def func3(x, a, b, c,d):
 def func4(x, a, b, c):
     return a*x*(b+sy.special.erf(c*x))
 
+
 comp = pd.read_csv("Competitor_table.csv",sep=';',header=None)
-print("competitor table",comp)
+#print("competitor table",comp)
 
 pa1 = pd.read_csv("jumbo10_H0_data",sep='\t',header=None)
 pa2 = pd.read_csv("jumbo16_H0_data",sep='\t',header=None)
@@ -57,7 +61,7 @@ p1=pa1.to_numpy()
 p2=pa2.to_numpy()
 p3=pa3.to_numpy()
 comp=comp.to_numpy()
-print(comp[0:8,1])
+#print(comp[0:8,1])
 
 print(pa2.shape)
 d1=p1[:,0]
@@ -83,7 +87,7 @@ plt.plot(dd, func(dd, *popt2), 'r-')#, label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % 
 plt.plot(dd, func(dd, *popt3), 'g-')#, label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt3))
 
  
-plt.plot(comp[0:8,1],comp[0:8,0]+5, '-*m')
+#plt.plot(comp[0:8,1],comp[0:8,0]+5, '-*m')
 
 plt.plot(d1,p1[:,8],'k+',label='original')
 plt.plot(d2,p2[:,10],'k+',label='original')
@@ -121,8 +125,8 @@ plt.savefig('figure.png',format='png', dpi=300)
 
 
 plt.figure(2)
-plt.plot([8,10,12,14,16,18,20,22],comp[0:8,1],"-+k",label="competitor H=0")
-plt.plot([8,10,12,14,16,18,20,22],comp[8:16,1],"-*k",label="competitor Hmax")
+#plt.plot([8,10,12,14,16,18,20,22],comp[0:8,1],"-+k",label="competitor H=0")
+#plt.plot([8,10,12,14,16,18,20,22],comp[8:16,1],"-*k",label="competitor Hmax")
 plt.plot([10, 16, 22],[1.4741,	2.7857,	3.924],"-+m",label="DR=5.5%")
 plt.plot([10, 16, 22],[1.6026,	2.8536,	4.0261],"-+b",label="DR=5%")
 plt.plot([10, 16, 22],[1.8762,	3.0149,	4.2857],"-+r",label="DR=4%")
@@ -173,11 +177,7 @@ for name, df in dataframes.items():
         print(f"\nGruppo L={valore}:\n", gruppo_df)
 
         try:
-            if gruppo_df.shape[0] < 2:
-                print(f"⚠️ Not enough data points to interpolate for L={valore}. Skipping.")
-                D3 = gruppo_df['D'].values[0] 
-            else:
-                D3 = find_coordinate(gruppo_df, 3.0, known="DRm")
+            D3 = find_coordinate(gruppo_df, 3.0, known="DRm")
             print(f"→ Interpolated D for DRm=3.0: {D3}")
             print(f"→ Corresponding N value: {gruppo_df['N'].values[0]}")
             # Add new row to the original DataFrame
@@ -218,9 +218,9 @@ data20=data20.to_numpy()
 data22=data22.to_numpy()
 
 #load Guentner Data
-dataG=pd.read_csv("comp_guentner.txt",sep='\t')
-print("load data Guentner",dataG)
-dataG=dataG.to_numpy()
+#dataG=pd.read_csv("comp_guentner.txt",sep='\t')
+#print("load data Guentner",dataG)
+#dataG=dataG.to_numpy()
 
 
 
@@ -228,14 +228,14 @@ dataG=dataG.to_numpy()
 #Competitor plot
 plt.figure(3)
 #plt.plot([comp[0,0],comp[8,0]], [comp[0,1],comp[8,1]], label="c-08 fan")
-plt.plot([comp[1,0],comp[9,0]], [comp[1,1],comp[9,1]],color='darkgray',linewidth=2, linestyle='--', label="c-10 fan")
+#plt.plot([comp[1,0],comp[9,0]], [comp[1,1],comp[9,1]],color='darkgray',linewidth=2, linestyle='--', label="c-10 fan")
 
 #plt.plot([comp[2,0],comp[10,0]], [comp[2,1],comp[10,1]], label="c-12 fan")
 #plt.plot([comp[3,0],comp[11,0]], [comp[3,1],comp[11,1]], label="c-14 fan")
-plt.plot([comp[4,0],comp[12,0]], [comp[4,1],comp[12,1]],color='gray',linewidth=2, linestyle='--', label="c-16 fan")
+#plt.plot([comp[4,0],comp[12,0]], [comp[4,1],comp[12,1]],color='gray',linewidth=2, linestyle='--', label="c-16 fan")
 #plt.plot([comp[5,0],comp[13,0]], [comp[5,1],comp[13,1]], label="c-18 fan")
-plt.plot([comp[6,0],comp[14,0]], [comp[6,1],comp[14,1]], color="lightgrey", linewidth=2, linestyle='--', label="c-20 fan")
-plt.plot([comp[7,0],comp[15,0]], [comp[7,1],comp[15,1]],color='dimgray',linewidth=2, linestyle='--', label="c-22 fan")
+#plt.plot([comp[6,0],comp[14,0]], [comp[6,1],comp[14,1]], color="lightgrey", linewidth=2, linestyle='--', label="c-20 fan")
+#plt.plot([comp[7,0],comp[15,0]], [comp[7,1],comp[15,1]],color='dimgray',linewidth=2, linestyle='--', label="c-22 fan")
 
 #Parametric analysis
 #H0a=np.array([0,0,0,0,0])
@@ -301,6 +301,7 @@ data16all = data16all.to_numpy()
 data20all = dataframes['data20']
 data20all =data20all[data20all["DRm"] == 3.0]
 data20all = data20all.to_numpy()
+
 #data22
 data22all = dataframes['data22']
 data22all =data22all[data22all["DRm"] == 3.0]
@@ -316,7 +317,6 @@ plt.plot(data10all[:,2],data10all[:,1],"-",color="blue", label="TK 10 fan")
 plt.plot(data16all[:,2],data16all[:,1],"-",color="red", label="TK 16 fan")
 plt.plot(data20all[:,2],data20all[:,1],"-",color="orange", label="TK 20 fan")
 plt.plot(data22all[:,2],data22all[:,1],"-",color="green", label="TK 22 fan")
-
 
 #PLOT GUENTNER DATA
 gunt=False
@@ -340,6 +340,67 @@ axes=plt.gca()
 #axes.set_aspect(0.8)
 plt.savefig('studio.png',format='png', dpi=300)
 #plt.show()
+
+
+#ftting of Dr=3% points on a curve
+def func_parabolic(x,a,b,c):
+    return a*x**2+b*x+c
+
+#def func_parabolic(x, A, k):
+#    return A * (1 - np.exp(-k * x))
+
+#def func_parabolic(x, Vmax, Km):
+ #   return Vmax * x / (Km + x)
+    
+popt10, pcov10 = curve_fit(func_parabolic, data10all[:,2],data10all[:,1])
+popt16, pcov16 = curve_fit(func_parabolic, data16all[:,2],data16all[:,1])
+popt20, pcov20 = curve_fit(func_parabolic, data20all[:,2],data20all[:,1])
+popt22, pcov22 = curve_fit(func_parabolic, data22all[:,2],data22all[:,1])
+
+dd10=np.linspace(start=0, stop=5, num=10, endpoint=False, retstep=False)
+dd16=np.linspace(start=0, stop=6, num=10, endpoint=False, retstep=False)
+dd20=np.linspace(start=0, stop=7, num=10, endpoint=False, retstep=False)
+dd22=np.linspace(start=0, stop=7, num=10, endpoint=False, retstep=False)
+
+#plt.figure(100)
+plt.plot(dd10, func_parabolic(dd10, *popt10), 'b--')
+plt.plot(dd16, func_parabolic(dd16, *popt16), 'r--')
+plt.plot(dd20, func_parabolic(dd20, *popt20), 'y--')
+plt.plot(dd22, func_parabolic(dd22, *popt22), 'g--')
+
+plt.legend(loc="upper right")
+plt.grid("on")
+plt.xlabel("H [m]",fontsize = 12)
+plt.ylabel("D [m]",fontsize = 12)
+plt.yticks(fontsize=10)
+plt.xticks(fontsize=10)
+axes=plt.gca()
+plt.savefig('studio2.png',format='png', dpi=300)
+####
+
+plt.figure(100)
+plt.plot(dd10, func_parabolic(dd10, *popt10), 'b--',label ="TK 10 fan")
+plt.plot(dd16, func_parabolic(dd16, *popt16), 'r--',label ="TK 16 fan")
+plt.plot(dd20, func_parabolic(dd20, *popt20), 'y--',label ="TK 20 fan")
+plt.plot(dd22, func_parabolic(dd22, *popt22), 'g--',label ="TK 22 fan")
+#plt.plot([comp[0,0],comp[8,0]], [comp[0,1],comp[8,1]], label="c-08 fan")
+plt.plot([comp[1,0],comp[9,0]], [comp[1,1],comp[9,1]],color='darkgray',linewidth=2, linestyle='--', label="c-10 fan")
+
+#plt.plot([comp[2,0],comp[10,0]], [comp[2,1],comp[10,1]], label="c-12 fan")
+#plt.plot([comp[3,0],comp[11,0]], [comp[3,1],comp[11,1]], label="c-14 fan")
+plt.plot([comp[4,0],comp[12,0]], [comp[4,1],comp[12,1]],color='gray',linewidth=2, linestyle='--', label="c-16 fan")
+#plt.plot([comp[5,0],comp[13,0]], [comp[5,1],comp[13,1]], label="c-18 fan")
+plt.plot([comp[6,0],comp[14,0]], [comp[6,1],comp[14,1]], color="lightgrey", linewidth=2, linestyle='--', label="c-20 fan")
+plt.plot([comp[7,0],comp[15,0]], [comp[7,1],comp[15,1]],color='dimgray',linewidth=2, linestyle='--', label="c-22 fan")
+
+plt.legend(loc="upper right")
+plt.grid("on")
+plt.xlabel("H [m]",fontsize = 12)
+plt.ylabel("D [m]",fontsize = 12)
+plt.yticks(fontsize=10)
+plt.xticks(fontsize=10)
+axes=plt.gca()
+plt.savefig('studio3.png',format='png', dpi=300)
 
 
 #D at DRm=3% H=0
@@ -366,12 +427,13 @@ plt.savefig('DR3.png',format='png', dpi=300)
 plt.show()
 
 #interpolat on N fan
-x_common = np.linspace(0.00001, 5, num=50)
+x_common = np.linspace(0.00001, 4, num=25)
 print("x_common",x_common)
 interp1 = interp1d(data10all[:,2], data10all[:,1], kind='linear', bounds_error=False, fill_value='extrapolate')
 interp2 = interp1d(data16all[:,2], data16all[:,1], kind='linear', bounds_error=False, fill_value='extrapolate')
 interp3 = interp1d(data20all[:,2], data20all[:,1], kind='linear', bounds_error=False, fill_value='extrapolate')
 interp4 = interp1d(data22all[:,2], data22all[:,1], kind='linear', bounds_error=False, fill_value='extrapolate')
+
 
 y_10 = interp1(x_common)
 y_16 = interp2(x_common)
@@ -388,7 +450,6 @@ def quadratic_interpolate(N0, y0, N1, y1, N2, y2, N_target):
     L2 = ((N_target - N0)*(N_target - N1)) / ((N2 - N0)*(N2 - N1))
     return y0 * L0 + y1 * L1 + y2 * L2
 
-
 fansi=[12,14,18,20]
 which_interp="quad"
 if which_interp=="linear":
@@ -402,8 +463,6 @@ elif which_interp=="quad":
     y_18 = quadratic_interpolate(16, y_16, 20, y_20, 22, y_22, 18)
     #y_22 = quadratic_interpolate(16, y_16, 20, y_20, 22, y_22, 22)
 y_18 = (y_16[:]+y_20[:])/2
-    
-
 plt.figure(5)
 
 plt.plot(x_common, y_12, label=f'N={12}', linestyle='--')
