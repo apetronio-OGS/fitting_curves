@@ -379,10 +379,10 @@ plt.savefig('studio2.png',format='png', dpi=300)
 ####
 
 plt.figure(100)
-plt.plot(dd10, func_parabolic(dd10, *popt10), 'b--',label ="TK 10 fan")
-plt.plot(dd16, func_parabolic(dd16, *popt16), 'r--',label ="TK 16 fan")
-plt.plot(dd20, func_parabolic(dd20, *popt20), 'y--',label ="TK 20 fan")
-plt.plot(dd22, func_parabolic(dd22, *popt22), 'g--',label ="TK 22 fan")
+plt.plot(dd10, func_parabolic(dd10, *popt10), 'b-',label ="TK 10 fan")
+plt.plot(dd16, func_parabolic(dd16, *popt16), 'r-',label ="TK 16 fan")
+plt.plot(dd20, func_parabolic(dd20, *popt20), 'y-',label ="TK 20 fan")
+plt.plot(dd22, func_parabolic(dd22, *popt22), 'g-',label ="TK 22 fan")
 #plt.plot([comp[0,0],comp[8,0]], [comp[0,1],comp[8,1]], label="c-08 fan")
 plt.plot([comp[1,0],comp[9,0]], [comp[1,1],comp[9,1]],color='darkgray',linewidth=2, linestyle='--', label="c-10 fan")
 
@@ -456,19 +456,19 @@ if which_interp=="linear":
     y_12 = interpolate_across_N(y_10, y_16, 10, 16, 12)
     y_14 = interpolate_across_N(y_10, y_16, 10, 16, 14)
     y_18 = interpolate_across_N(y_16, y_20, 16, 20, 18)
-    #y_22 = interpolate_across_N(y_16, y_20, 16, 20, 22)
+    y_22 = interpolate_across_N(y_16, y_20, 16, 20, 22)
 elif which_interp=="quad":
     y_12 = quadratic_interpolate(10, y_10, 16, y_16, 20, y_20, 12)
     y_14 = quadratic_interpolate(10, y_10, 16, y_16, 20, y_20, 14)
     y_18 = quadratic_interpolate(16, y_16, 20, y_20, 22, y_22, 18)
-    #y_22 = quadratic_interpolate(16, y_16, 20, y_20, 22, y_22, 22)
-y_18 = (y_16[:]+y_20[:])/2
+    y_22 = quadratic_interpolate(16, y_16, 20, y_20, 22, y_22, 22)
+#_18 = (y_16[:]+y_20[:])/2
 plt.figure(5)
 
 plt.plot(x_common, y_12, label=f'N={12}', linestyle='--')
 plt.plot(x_common, y_14, label=f'N={14}', linestyle='--')
 plt.plot(x_common, y_18, label=f'N={18}', linestyle='--')
-#plt.plot(x_common, y_22, label=f'N={22}', linestyle='--')
+plt.plot(x_common, y_22, label=f'N={22}', linestyle='--')
 
 plt.plot(x_common, y_10,  "-",color="blue", label="TK 10 fan")
 plt.plot(x_common, y_16,  "-",color="red", label="TK 16 fan")
