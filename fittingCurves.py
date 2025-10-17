@@ -6,7 +6,15 @@ from scipy.optimize import fsolve
 import scipy as sy
 from scipy.interpolate import interp1d
 
+def interpolate_across_N(y1, y2, N1, N2, N_target):
+    w = (N_target - N1) / (N2 - N1)
+    return (1 - w) * y1 + w * y2
 
+def quadratic_interpolate(N0, y0, N1, y1, N2, y2, N_target):
+    L0 = ((N_target - N1)*(N_target - N2)) / ((N0 - N1)*(N0 - N2))
+    L1 = ((N_target - N0)*(N_target - N2)) / ((N1 - N0)*(N1 - N2))
+    L2 = ((N_target - N0)*(N_target - N1)) / ((N2 - N0)*(N2 - N1))
+    return y0 * L0 + y1 * L1 + y2 * L2
 def find_coordinate(data_dict, target_value, known="DRm"):
     """
     Trova la coordinata corrispondente a un valore su una retta o spezzata.
@@ -81,14 +89,17 @@ popt3, pcov3 = curve_fit(func, d3, p3[:,14])
 print(popt3)
 
 dd=np.linspace(start=0, stop=d1[-1], num=100, endpoint=False, retstep=False)
+ch10=func(dd, *popt1)
+ch16=func(dd, *popt2)
+ch22=func(dd, *popt3)
+
 plt.figure(1)
-plt.plot(dd, func(dd, *popt1), 'b-')#, label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt1))
-plt.plot(dd, func(dd, *popt2), 'r-')#, label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt2))
-plt.plot(dd, func(dd, *popt3), 'g-')#, label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt3))
+plt.plot(dd, ch10, 'b-',label ="TK 12 fan")#, label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt1))
+plt.plot(dd, ch16, 'r-',label ="TK 16 fan")#, label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt2))
+plt.plot(dd, ch22, 'g-',label ="TK 22 fan")#, label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt3))
 
  
 #plt.plot(comp[0:8,1],comp[0:8,0]+5, '-*m')
-
 plt.plot(d1,p1[:,8],'k+',label='original')
 plt.plot(d2,p2[:,10],'k+',label='original')
 plt.plot(d3,p3[:,14],'k+',label='original')
@@ -102,8 +113,6 @@ plt.ylabel("de-rating %")
 plt.grid()
 #plt.ylim([0,10])
 #plt.xlim([1,7.5])
-
-
 
 #find the intersections
 def func0(x):
@@ -120,6 +129,33 @@ print(f"The root is: {root2[0]}")
 root3 = fsolve(func0, x0=2)
 print(f"The root is: {root3[0]}")
 
+# add the interpolated points to the plot
+fansi=[12,14,18,20]
+which_interp="linear"
+if which_interp=="linear":
+    ch12 = interpolate_across_N(ch10, ch16, 10, 16, 12)
+    ch14 = interpolate_across_N(ch10, ch16, 10, 16, 14)
+    ch18 = interpolate_across_N(ch16, ch22, 16, 22, 18)
+    ch20 = interpolate_across_N(ch16, ch22, 16, 22, 20)
+
+elif which_interp=="quad":
+    ch12 = quadratic_interpolate(10, ch10, 16, ch16, 22, ch22, 12)
+    ch14 = quadratic_interpolate(10, ch10, 16, ch16, 22, ch22, 14)
+    ch18 = quadratic_interpolate(10, ch10, 16, ch16, 22, ch22, 18)
+    ch20 = quadratic_interpolate(10, ch10, 16, ch16, 22, ch22, 20)
+plt.plot(dd, ch12, '--',label ="TK 12 fan")
+plt.plot(dd, ch14, '--',label ="TK 14 fan")
+plt.plot(dd, ch18, '--',label ="TK 18 fan")
+plt.plot(dd, ch20, '--',label ="TK 20 fan")
+
+f18=interp1 = interp1d(dd, ch18, kind='linear', bounds_error=False, fill_value='extrapolate')
+x18=3.5
+dr18=f18(x18)
+print("derating for 18 fan at 3.5m height:",dr18)
+#plt.legend(loc="upper right")
+plt.legend(loc="lower left")
+plt.xlim(0,5)
+plt.ylim(0,10)
 plt.show()
 plt.savefig('figure.png',format='png', dpi=300)
 
@@ -377,21 +413,47 @@ plt.xticks(fontsize=10)
 axes=plt.gca()
 plt.savefig('studio2.png',format='png', dpi=300)
 ####
+p10=func_parabolic(dd10, *popt10)
+p16=func_parabolic(dd16, *popt16)
+p20=func_parabolic(dd20, *popt20)
+p22=func_parabolic(dd22, *popt22)
+
+fansi=[12,14,18,20]
+which_interp="quad"
+if which_interp=="linear":
+    p12 = interpolate_across_N(p10, p16, 10, 16, 12)
+    p14 = interpolate_across_N(p10, p16, 10, 16, 14)
+    p18 = interpolate_across_N(p16, p20, 16, 20, 18)
+
+elif which_interp=="quad":
+    p12 = quadratic_interpolate(10, p10, 16, p16, 20, p20, 12)
+    p14 = quadratic_interpolate(10, p10, 16, p16, 20, p20, 14)
+    p18 = quadratic_interpolate(16, p16, 20, p20, 22, p22, 18)
+
 
 plt.figure(100)
-plt.plot(dd10, func_parabolic(dd10, *popt10), 'b-',label ="TK 10 fan")
-plt.plot(dd16, func_parabolic(dd16, *popt16), 'r-',label ="TK 16 fan")
-plt.plot(dd20, func_parabolic(dd20, *popt20), 'y-',label ="TK 20 fan")
-plt.plot(dd22, func_parabolic(dd22, *popt22), 'g-',label ="TK 22 fan")
-#plt.plot([comp[0,0],comp[8,0]], [comp[0,1],comp[8,1]], label="c-08 fan")
-plt.plot([comp[1,0],comp[9,0]], [comp[1,1],comp[9,1]],color='darkgray',linewidth=2, linestyle='--', label="c-10 fan")
+plt.plot(dd10, p10, 'b-',label ="TK 10 fan")
+plt.plot(dd10, p12,label ="TK 12 fan")
+plt.plot(dd16, p14,label ="TK 14 fan")
+plt.plot(dd16, p16, 'r-',label ="TK 16 fan")
+plt.plot(dd20, p18,label ="TK 18 fan")
+plt.plot(dd20, p20, 'y-',label ="TK 20 fan")
+plt.plot(dd22, p22, 'g-',label ="TK 22 fan")
 
-#plt.plot([comp[2,0],comp[10,0]], [comp[2,1],comp[10,1]], label="c-12 fan")
-#plt.plot([comp[3,0],comp[11,0]], [comp[3,1],comp[11,1]], label="c-14 fan")
-plt.plot([comp[4,0],comp[12,0]], [comp[4,1],comp[12,1]],color='gray',linewidth=2, linestyle='--', label="c-16 fan")
-#plt.plot([comp[5,0],comp[13,0]], [comp[5,1],comp[13,1]], label="c-18 fan")
-plt.plot([comp[6,0],comp[14,0]], [comp[6,1],comp[14,1]], color="lightgrey", linewidth=2, linestyle='--', label="c-20 fan")
-plt.plot([comp[7,0],comp[15,0]], [comp[7,1],comp[15,1]],color='dimgray',linewidth=2, linestyle='--', label="c-22 fan")
+
+
+
+comp_=False
+if comp_==True:
+    #plt.plot([comp[0,0],comp[8,0]], [comp[0,1],comp[8,1]], label="c-08 fan")
+    plt.plot([comp[1,0],comp[9,0]], [comp[1,1],comp[9,1]],color='darkgray',linewidth=2, linestyle='--', label="c-10 fan")
+
+    #plt.plot([comp[2,0],comp[10,0]], [comp[2,1],comp[10,1]], label="c-12 fan")
+    #plt.plot([comp[3,0],comp[11,0]], [comp[3,1],comp[11,1]], label="c-14 fan")
+    plt.plot([comp[4,0],comp[12,0]], [comp[4,1],comp[12,1]],color='gray',linewidth=2, linestyle='--', label="c-16 fan")
+    #plt.plot([comp[5,0],comp[13,0]], [comp[5,1],comp[13,1]], label="c-18 fan")
+    plt.plot([comp[6,0],comp[14,0]], [comp[6,1],comp[14,1]], color="lightgrey", linewidth=2, linestyle='--', label="c-20 fan")
+    plt.plot([comp[7,0],comp[15,0]], [comp[7,1],comp[15,1]],color='dimgray',linewidth=2, linestyle='--', label="c-22 fan")
 
 plt.legend(loc="upper right")
 plt.grid("on")
@@ -440,15 +502,7 @@ y_16 = interp2(x_common)
 y_20 = interp3(x_common)
 y_22 = interp4(x_common)
 
-def interpolate_across_N(y1, y2, N1, N2, N_target):
-    w = (N_target - N1) / (N2 - N1)
-    return (1 - w) * y1 + w * y2
 
-def quadratic_interpolate(N0, y0, N1, y1, N2, y2, N_target):
-    L0 = ((N_target - N1)*(N_target - N2)) / ((N0 - N1)*(N0 - N2))
-    L1 = ((N_target - N0)*(N_target - N2)) / ((N1 - N0)*(N1 - N2))
-    L2 = ((N_target - N0)*(N_target - N1)) / ((N2 - N0)*(N2 - N1))
-    return y0 * L0 + y1 * L1 + y2 * L2
 
 fansi=[12,14,18,20]
 which_interp="quad"
@@ -506,8 +560,8 @@ for x_target in x_targets:
 plt.legend(loc="upper left")
 plt.title("Fan performance at different heights")
 
-plt.xlabel("D [m]",fontsize = 12)
-plt.ylabel("Fan ",fontsize = 12)
+plt.ylabel("D [m]",fontsize = 12)
+plt.xlabel("Fan ",fontsize = 12)
 plt.yticks(fontsize=10)
 plt.xticks(fontsize=10)
 plt.grid()
