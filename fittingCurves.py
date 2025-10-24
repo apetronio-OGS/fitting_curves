@@ -93,6 +93,10 @@ ch10=func(dd, *popt1)
 ch16=func(dd, *popt2)
 ch22=func(dd, *popt3)
 
+x10=2.2
+f10=interp1d(dd, ch10, kind='linear', bounds_error=False)
+dr10my=f10(x10)
+
 plt.figure(1)
 plt.plot(dd, ch10, 'b-',label ="TK 12 fan")#, label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt1))
 plt.plot(dd, ch16, 'r-',label ="TK 16 fan")#, label='fit: a=%5.3f, b=%5.3f, c=%5.3f' % tuple(popt2))
@@ -131,7 +135,7 @@ print(f"The root is: {root3[0]}")
 
 # add the interpolated points to the plot
 fansi=[12,14,18,20]
-which_interp="linear"
+which_interp="quad"
 if which_interp=="linear":
     ch12 = interpolate_across_N(ch10, ch16, 10, 16, 12)
     ch14 = interpolate_across_N(ch10, ch16, 10, 16, 14)
@@ -148,16 +152,18 @@ plt.plot(dd, ch14, '--',label ="TK 14 fan")
 plt.plot(dd, ch18, '--',label ="TK 18 fan")
 plt.plot(dd, ch20, '--',label ="TK 20 fan")
 
-f18=interp1 = interp1d(dd, ch18, kind='linear', bounds_error=False, fill_value='extrapolate')
+f18=interp1d(dd, ch18, kind='linear', bounds_error=False, fill_value='extrapolate')
 x18=3.5
 dr18=f18(x18)
+
+print("derating for 10 fan at 2.2m height:",dr10my)
 print("derating for 18 fan at 3.5m height:",dr18)
 #plt.legend(loc="upper right")
 plt.legend(loc="lower left")
 plt.xlim(0,5)
 plt.ylim(0,10)
 plt.show()
-plt.savefig('figure.png',format='png', dpi=300)
+plt.savefig('figuremy_quad.png',format='png', dpi=300)
 
 
 plt.figure(2)
@@ -404,6 +410,14 @@ plt.plot(dd16, func_parabolic(dd16, *popt16), 'r--')
 plt.plot(dd20, func_parabolic(dd20, *popt20), 'y--')
 plt.plot(dd22, func_parabolic(dd22, *popt22), 'g--')
 
+plt.plot(dd10, func_parabolic(dd10, *popt10)+0.02, 'b--')
+plt.plot(dd10, func_parabolic(dd10, *popt10)-0.02, 'b--')
+
+plt.plot(dd22, func_parabolic(dd22, *popt22)+0.09, 'g--')
+plt.plot(dd22, func_parabolic(dd22, *popt22)-0.09, 'g--')
+#plt.errorbar(dd10, func_parabolic(dd10, *popt10), yerr=0.02, fmt='o', capsize=2, label='Data with error')
+
+
 plt.legend(loc="upper right")
 plt.grid("on")
 plt.xlabel("H [m]",fontsize = 12)
@@ -566,3 +580,6 @@ plt.yticks(fontsize=10)
 plt.xticks(fontsize=10)
 plt.grid()
 plt.savefig('interp_Dr3.png',format='png', dpi=300)
+
+print("derating for 18 fan at 3.5m height:",dr18)
+print("derating for 10 fan at 2.2m height:",dr10my)
